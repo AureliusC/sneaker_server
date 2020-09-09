@@ -15,6 +15,6 @@ app.use('/user',user)
 app.use(require('./middleware/validate-session'));
 app.use('/review', review)
 
-app.listen(3210,function(){
-    console.log('LOVE TO CODE ');
-})
+app.listen(process.env.PORT,function(){
+    console.log(`*********App is listening on ${process.env.PORT}*********`);
+});
