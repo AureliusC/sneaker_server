@@ -2,11 +2,13 @@ const jwt = require('jsonwebtoken');
 const user = require('../db').import('../models/user');
 
 const validateSession =(req,res, next) =>{
+    if(req.method === 'OPTIONS')
+{
+    next()
+}    else{
+
     const token =req.headers.authorization;
-   console.log('token -->', token);
-    if(!token){
-        return res.status(403).send({auth:false,message:"No token provided "})
-    }else{
+    console.log('token -->', token)
         jwt.verify(token,process.env.JWT_SECRET, (err, decodeToken) => {
             console.log('decodeToken-->',decodeToken);
             if(!err && decodeToken){
@@ -16,7 +18,7 @@ const validateSession =(req,res, next) =>{
                     }
                 })
                 .then(user =>{
-                   
+                    
                     if(!user) throw err;
                     console.log('user-->',user);
                     req.user =user;
@@ -30,6 +32,7 @@ const validateSession =(req,res, next) =>{
             }
         });
     }
+    
 };
 
 module.exports = validateSession;

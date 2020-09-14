@@ -1,65 +1,65 @@
 require('dotenv').config();
-const router = require('express').Router();
-const User = require('../db').import('../models/user');
+const router = require("express").Router();
+const User= require("../db").import("../models/user");
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs')
+const bcrypt =require('bcryptjs')
 
-// user signup
-router.post('/signup', function(req,res){
 
+router.post("/create",function(req,res){
     User.create({
-        email:req.body.user.email,
-        username:req.body.user.username,
-        password:bcrypt.hashSync(req.body.user.password,13),
         firstName:req.body.user.firstName,
-        lastName:req.body.user.lastName
+        lastName:req.body.user.lastName,
+        email:req.body.user.email,
+        password:bcrypt.hashSync(req.body.user.password,13)
     })
-    .then(
-        function createSucess(user){
-            let token =jwt.sign({id:user.id}, process.env.JWT_SECRET,{expiresIn: 60* 60* 24});
-            res.json({
-                user:user,
+    .then(function createSuccess(user){
+        let token=jwt.sign({id:user.id}, process.env.JWT_SECRET,{
+            expiresIn: 60* 60 *24,
+        });
 
-                message:'User successfully created!',
-                sessionToken:token,
-                
-            });
-        }
+        res.json({
+            message:"Account has successfully been created!",
+            sessionToken: token,
+        });
+    }
     )
-    .catch(err=> res.status(500).json({error:err}))
+    .catch(err=> {
+        res.status(409).json({message:"Email already created!"})
+    });
 });
 
-// user login
-
-router.post('/login',function(req,res){
+router.post("/login",function(req,res){
     User.findOne({
         where:{
-            email:req.body.user.email
-        }
+            email: req.body.user.email,
+        },
     })
     .then(function loginSuccess(user){
-        if(user){
-            bcrypt.compare(req.body.user.password,user.password,function(err,matches){
+        console.log('Still here')
+
+        if (user){
+
+            bcrypt.compare(req.body.user.password, user.password, function(
+                err,
+                matches
+            ) {
                 if(matches){
-            
-            let token = jwt.sign({id:user.id}, process.env.JWT_SECRET,{expiresIn: 60 * 60 * 24 })
+                    let token= jwt.sign({id:user.id}, process.env.JWT_SECRET,{
+                        expiresIn:60*60*24,
+                    });
 
-            res.status(200).json({
-                user:user,
-                message:"User successfully logged in!",
-                sessionToken:token,
-            })
-
-        } else {
-            res.status(500).send({error:"Can't find user"});
+                    res.status(200).json({
+                        user:user,
+                        message:"User has successfully logged in!",
+                        sessionToken:token,
+                    });
+                } else{
+                    res.status(500).json({error:"User does not exist."})
+                }
+            });
         }
-    });
-    }else{
-        res.status(500).json({error:"Can't find user"})
-    }
-})
-    .catch(err => res.status(500).json({ error:err}))
+    })
+    .catch((err) => res.status(500).json({error:err}));
 });
 
-
-module.exports = router;
+module.exports= router;
